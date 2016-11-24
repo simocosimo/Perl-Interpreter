@@ -27,6 +27,7 @@ int interpreter_integer(Interpreter *intrp);
 void interpreter_skip_whitespaces(Interpreter * intrp);
 Token *interpreter_get_next_token(Interpreter *intrp);
 void interpreter_eat(Interpreter *intrp, int type);
-int interpreter_expr(Interpreter *intrp);
+float interpreter_expr(Interpreter *intrp);
+void interpreter_destroy(Interpreter *intrp);
 
 #endif

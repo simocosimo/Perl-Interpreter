@@ -91,6 +91,16 @@ Token *interpreter_get_next_token(Interpreter *intrp) {
 			return token_create(TK_MINUS, intrp->cCUrr);
 		}
 
+		if (intrp->cCUrr == '*') {
+			interpreter_advance(intrp);
+			return token_create(TK_MULTIPLY, intrp->cCUrr);
+		}
+
+		if (intrp->cCUrr == '/') {
+			interpreter_advance(intrp);
+			return token_create(TK_DIVIDE, intrp->cCUrr);
+		}
+
 		interpreter_error("GET_NEXT_TOKEN: Can't recognize the current character.");
 	}
 
@@ -105,8 +115,8 @@ void interpreter_eat(Interpreter *intrp, int type) {
 	}
 }
 
-int interpreter_expr(Interpreter *intrp) {
-	int result = 0;
+float interpreter_expr(Interpreter *intrp) {
+	float result = 0;
 	intrp->tCurr = interpreter_get_next_token(intrp);
 
 	Token *left = intrp->tCurr;
@@ -115,6 +125,8 @@ int interpreter_expr(Interpreter *intrp) {
 	Token *op = intrp->tCurr;
 	if(op->iType == TK_PLUS) interpreter_eat(intrp, TK_PLUS);
 	else if (op->iType == TK_MINUS) interpreter_eat(intrp, TK_MINUS);
+	else if (op->iType == TK_MULTIPLY) interpreter_eat(intrp, TK_MULTIPLY);
+	else if (op->iType == TK_DIVIDE) interpreter_eat(intrp, TK_DIVIDE);
 
 	Token *right = intrp->tCurr;
 	interpreter_eat(intrp, TK_INTEGER);
@@ -123,7 +135,31 @@ int interpreter_expr(Interpreter *intrp) {
 	if (endFile->iType != TK_EOF)
 		interpreter_error("EXPR: The expression does not match the pattern sequence.");
 
-	if (op->iType == TK_PLUS) result = left->cValue + right->cValue;
-	else if (op->iType == TK_MINUS) result = left->cValue - right->cValue;
+	switch (op->iType)
+	{
+	case TK_PLUS:
+		result = left->iValue + right->iValue;
+		break;
+
+	case TK_MINUS:
+		result = left->iValue - right->iValue;
+		break;
+
+	case TK_MULTIPLY:
+		result = left->iValue * right->iValue;
+		break;
+
+	case TK_DIVIDE:
+		if(right->iValue != 0) result = (float)left->iValue / right->iValue;
+		else interpreter_error("EXPR: Division by zero.");
+		break;
+
+	default:
+		break;
+	}
 	return result;
+}
+
+void interpreter_destroy(Interpreter *intrp) {
+	
 }

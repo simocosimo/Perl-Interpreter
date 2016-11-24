@@ -6,7 +6,7 @@ Token *token_create(int type, ...) {
 
 	tk->iType = type;
 	va_start(ap, type);
-	tk->cValue = va_arg(ap, int);
+	tk->iValue = va_arg(ap, int);
 	va_end(ap);
 
 	// token_print(tk);
@@ -14,11 +14,9 @@ Token *token_create(int type, ...) {
 }
 
 void token_print(Token *tk) {
-	printf("Token(%d, %c)\n", tk->iType, tk->cValue);
+	printf("Token(%d, %c)\n", tk->iType, tk->iValue);
 }
 
-Token *token_destroy(Token *tk) {
-	Token *tmp = tk;
-	free(tmp);
-	return tmp;
+void token_destroy(Token *tk) {
+	free(tk);
 }

@@ -12,14 +12,14 @@
 typedef struct token
 {
 	int iType;
-	int cValue;
+	int iValue;
 }Token;
 
 // FUNCS
 
 Token *token_create(int type, ...);
 void token_print(Token *tk);
-Token *token_destroy(Token *tk);
+void token_destroy(Token *tk);
 
 
 #endif
