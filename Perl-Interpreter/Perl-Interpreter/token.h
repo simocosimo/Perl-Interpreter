@@ -12,7 +12,7 @@
 typedef struct token
 {
 	int iType;
-	char cValue;
+	int cValue;
 }Token;
 
 // FUNCS

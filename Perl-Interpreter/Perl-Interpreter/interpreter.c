@@ -48,21 +48,22 @@ void interpreter_skip_whitespaces(Interpreter * intrp) {
 }
 
 int interpreter_integer(Interpreter *intrp) {
-	int n = 1, result;
-	char *sInteger = (char *) malloc(sizeof(char));
+	int n = 1, act, result;
+	act = 2 * n;
+	char *sInteger = (char *) malloc(act * sizeof(char));
 	while (intrp->cCUrr != '\0' && isdigit(intrp->cCUrr)) {
-		/* if (n != 1) {
-			if (sInteger + (n - 1) == NULL) {
-				sInteger = realloc(sInteger, (2 * (n - 1) + 1) * sizeof(char));
+		if (n != 1) {
+			if (sInteger[act - 1] == '\0') {
+				act = 2 * (n - 1) + 1;
+				sInteger = realloc(sInteger, act * sizeof(char));
 			}
-		} */
+		}
 		sInteger[n - 1] = intrp->cCUrr;
+		sInteger[n] = '\0';
 		interpreter_advance(intrp);
 		n++;
 	}
-	sInteger[n - 1] = '\0';
 	result = atoi(sInteger);
-	sInteger = realloc(sInteger, n * sizeof(char));
 
 	free(sInteger);
 	return result;
