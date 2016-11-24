@@ -24,6 +24,8 @@ Interpreter *interpreter_create(char *path) {
 		intrp->sText[i] = getc(intrp->pFile);
 	intrp->sText[n - 1] = '\0';
 
+	intrp->cCUrr = intrp->sText[intrp->iPos];
+
 	fclose(fp);
 	return intrp;
 }
@@ -32,36 +34,70 @@ void interpreter_error(const char *message) {
 	printf("%s\n", message);
 }
 
-Token *interpreter_get_next_token(Interpreter *intrp) {
-	char cCurr;
-	
+void interpreter_advance(Interpreter *intrp) {
+	intrp->iPos++;
 	if ((unsigned int)intrp->iPos > strlen(intrp->sText) - 1)
-		return token_create(TK_EOF);
+		intrp->cCUrr = '\0';
+	else
+		intrp->cCUrr = intrp->sText[intrp->iPos];
+}
 
-	cCurr = intrp->sText[intrp->iPos];
+void interpreter_skip_whitespaces(Interpreter * intrp) {
+	while (intrp->cCUrr != '\0' && isspace(intrp->cCUrr))
+		interpreter_advance(intrp);
+}
 
-	if (isdigit(cCurr)) {
-		intrp->iPos++;
-		return token_create(TK_INTEGER, cCurr);
+int interpreter_integer(Interpreter *intrp) {
+	int n = 1, result;
+	char *sInteger = (char *) malloc(sizeof(char));
+	while (intrp->cCUrr != '\0' && isdigit(intrp->cCUrr)) {
+		/* if (n != 1) {
+			if (sInteger + (n - 1) == NULL) {
+				sInteger = realloc(sInteger, (2 * (n - 1) + 1) * sizeof(char));
+			}
+		} */
+		sInteger[n - 1] = intrp->cCUrr;
+		interpreter_advance(intrp);
+		n++;
+	}
+	sInteger[n - 1] = '\0';
+	result = atoi(sInteger);
+	sInteger = realloc(sInteger, n * sizeof(char));
+
+	free(sInteger);
+	return result;
+}
+
+Token *interpreter_get_next_token(Interpreter *intrp) {
+	
+	while (intrp->cCUrr != '\0') {
+
+		if (isspace(intrp->cCUrr)) {
+			interpreter_skip_whitespaces(intrp);
+			continue;
+		}
+
+		if (isdigit(intrp->cCUrr)) 
+			return token_create(TK_INTEGER, interpreter_integer(intrp));
+
+		if (intrp->cCUrr == '+') {
+			interpreter_advance(intrp);
+			return token_create(TK_PLUS, intrp->cCUrr);
+		}
+
+		if (intrp->cCUrr == '-') {
+			interpreter_advance(intrp);
+			return token_create(TK_MINUS, intrp->cCUrr);
+		}
+
+		interpreter_error("GET_NEXT_TOKEN: Can't recognize the current character.");
 	}
 
-	if (cCurr == '+') {
-		intrp->iPos++;
-		return token_create(TK_PLUS, cCurr);
-	}
-
-	if (cCurr == '-') {
-		intrp->iPos++;
-		return token_create(TK_MINUS, cCurr);
-	}
-
-	interpreter_error("GET_NEXT_TOKEN: Can't recognize the current character.");
-	return NULL;
+	return token_create(TK_EOF);
 }
 
 void interpreter_eat(Interpreter *intrp, int type) {
 	if (intrp->tCurr->iType == type) {
-		if (intrp->tCurr->iType == TK_INTEGER) intrp->tCurr->cValue -= '0';
 		intrp->tCurr = interpreter_get_next_token(intrp);
 	} else {
 		interpreter_error("EAT: The type of the current token not match the pattern type.");

@@ -12,6 +12,7 @@ typedef struct interpreter
 {
 	FILE *pFile;
 	char *sText;
+	char cCUrr;
 	Token *tCurr;
 
 	int iPos;
@@ -21,6 +22,9 @@ typedef struct interpreter
 
 Interpreter *interpreter_create(char *path);
 void interpreter_error(const char *message);
+void interpreter_advance(Interpreter *intrp);
+int interpreter_integer(Interpreter *intrp);
+void interpreter_skip_whitespaces(Interpreter * intrp);
 Token *interpreter_get_next_token(Interpreter *intrp);
 void interpreter_eat(Interpreter *intrp, int type);
 int interpreter_expr(Interpreter *intrp);

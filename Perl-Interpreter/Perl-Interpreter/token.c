@@ -9,6 +9,7 @@ Token *token_create(int type, ...) {
 	tk->cValue = va_arg(ap, int);
 	va_end(ap);
 
+	// token_print(tk);
 	return tk;
 }
 
