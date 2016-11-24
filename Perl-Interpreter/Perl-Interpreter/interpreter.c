@@ -109,9 +109,10 @@ Token *interpreter_get_next_token(Interpreter *intrp) {
 
 void interpreter_eat(Interpreter *intrp, int type) {
 	if (intrp->tCurr->iType == type) {
+		token_destroy(intrp->tCurr);
 		intrp->tCurr = interpreter_get_next_token(intrp);
 	} else {
-		interpreter_error("EAT: The type of the current token not match the pattern type.");
+		interpreter_error("EAT: The type of the current token not match the right token type.");
 	}
 }
 
@@ -119,38 +120,38 @@ float interpreter_expr(Interpreter *intrp) {
 	float result = 0;
 	intrp->tCurr = interpreter_get_next_token(intrp);
 
-	Token *left = intrp->tCurr;
+	Token left = *intrp->tCurr;
 	interpreter_eat(intrp, TK_INTEGER);
 
-	Token *op = intrp->tCurr;
-	if(op->iType == TK_PLUS) interpreter_eat(intrp, TK_PLUS);
-	else if (op->iType == TK_MINUS) interpreter_eat(intrp, TK_MINUS);
-	else if (op->iType == TK_MULTIPLY) interpreter_eat(intrp, TK_MULTIPLY);
-	else if (op->iType == TK_DIVIDE) interpreter_eat(intrp, TK_DIVIDE);
+	Token op = *intrp->tCurr;
+	if(op.iType == TK_PLUS) interpreter_eat(intrp, TK_PLUS);
+	else if (op.iType == TK_MINUS) interpreter_eat(intrp, TK_MINUS);
+	else if (op.iType == TK_MULTIPLY) interpreter_eat(intrp, TK_MULTIPLY);
+	else if (op.iType == TK_DIVIDE) interpreter_eat(intrp, TK_DIVIDE);
 
-	Token *right = intrp->tCurr;
+	Token right = *intrp->tCurr;
 	interpreter_eat(intrp, TK_INTEGER);
 
 	Token *endFile = intrp->tCurr;
 	if (endFile->iType != TK_EOF)
 		interpreter_error("EXPR: The expression does not match the pattern sequence.");
 
-	switch (op->iType)
+	switch (op.iType)
 	{
 	case TK_PLUS:
-		result = left->iValue + right->iValue;
+		result = left.iValue + right.iValue;
 		break;
 
 	case TK_MINUS:
-		result = left->iValue - right->iValue;
+		result = left.iValue - right.iValue;
 		break;
 
 	case TK_MULTIPLY:
-		result = left->iValue * right->iValue;
+		result = left.iValue * right.iValue;
 		break;
 
 	case TK_DIVIDE:
-		if(right->iValue != 0) result = (float)left->iValue / right->iValue;
+		if(right.iValue != 0) result = (float)left.iValue / right.iValue;
 		else interpreter_error("EXPR: Division by zero.");
 		break;
 
@@ -161,5 +162,8 @@ float interpreter_expr(Interpreter *intrp) {
 }
 
 void interpreter_destroy(Interpreter *intrp) {
-	
+	if (intrp->pFile != NULL) fclose(intrp->pFile);
+	if (intrp->sText != NULL) free(intrp->sText);
+	if (intrp->tCurr != NULL) token_destroy(intrp->tCurr);
+	free(intrp);
 }

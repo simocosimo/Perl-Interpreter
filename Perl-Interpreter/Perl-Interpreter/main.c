@@ -11,6 +11,7 @@ int main(int argc, char **argv)
 	result = interpreter_expr(intrp);
 	printf("%f\n", result);
 
+	interpreter_destroy(intrp);
 	system("PAUSE");
 	return 0;
 }
